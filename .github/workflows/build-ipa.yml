@@ -1,0 +1,37 @@
+name: Build IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Archive (unsigned)
+        run: |
+          xcodebuild -project HybridShellLab.xcodeproj \
+            -scheme HybridShellLab \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/HybridShellLab.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R "build/HybridShellLab.xcarchive/Products/Applications/HybridShellLab.app" build/Payload/
+          cd build
+          zip -qry HybridShellLab-unsigned.ipa Payload
+          rm -rf Payload
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HybridShellLab-unsigned-ipa
+          path: build/HybridShellLab-unsigned.ipa
