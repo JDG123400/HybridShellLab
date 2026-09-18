@@ -21,8 +21,8 @@ final class AppModel: ObservableObject {
     weak var webView: WKWebView?
 
     init() {
-        bridge.model = self
         scripts = Self.loadScripts()
+        bridge.model = self
     }
 
     func log(_ text: String) {
